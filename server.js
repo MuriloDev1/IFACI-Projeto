@@ -5,7 +5,41 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const dados = [];
+const dados = [
+  {
+    id: 1,
+    Sensor: "Temperatura",
+    Codigo: "T01",
+    temp: 25,
+    umid: 60,
+    pressao: 1013,
+    status_f: true,
+    trava_seg: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    Sensor: "Umidade",
+    Codigo: "U01",
+    temp: 22,
+    umid: 58,
+    pressao: 1012,
+    status_f: true,
+    trava_seg: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    Sensor: "Pressão",
+    Codigo: "P01",
+    temp: 24,
+    umid: 61,
+    pressao: 1014,
+    status_f: true,
+    trava_seg: true,
+    createdAt: new Date().toISOString(),
+  },
+];
 
 const normalizeSensorPayload = (body) => {
   return {

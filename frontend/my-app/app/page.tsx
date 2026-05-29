@@ -22,6 +22,13 @@ export default function Home() {
   const [dadosBackend, setDadosBackend] =
     useState<SensorData[]>(defaultSensores);
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState("");
+  const [novoSensor, setNovoSensor] = useState("");
+  const [novoCodigo, setNovoCodigo] = useState("");
+  const [novaTemp, setNovaTemp] = useState("");
+  const [novaUmid, setNovaUmid] = useState("");
+  const [novaPressao, setNovaPressao] = useState("");
+  const [novoStatusAtivo, setNovoStatusAtivo] = useState(true);
+  const [novaTravaAtiva, setNovaTravaAtiva] = useState(false);
 
   const pegaDados = async () => {
     try {
@@ -49,6 +56,44 @@ export default function Home() {
     }
   };
 
+  const adicionarSensor = async () => {
+    try {
+      const payload = {
+        Sensor: novoSensor || `Sensor ${dadosBackend.length + 1}`,
+        Codigo: novoCodigo || `${dadosBackend.length + 1}`,
+        temp: novaTemp !== "" ? Number(novaTemp) : null,
+        umid: novaUmid !== "" ? Number(novaUmid) : null,
+        pressao: novaPressao !== "" ? Number(novaPressao) : null,
+        status_f: novoStatusAtivo,
+        trava_seg: novaTravaAtiva,
+      };
+
+      const resposta = await fetch("http://localhost:8080/newdata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!resposta.ok) {
+        throw new Error("Não foi possível adicionar o sensor.");
+      }
+
+      setNovoSensor("");
+      setNovoCodigo("");
+      setNovaTemp("");
+      setNovaUmid("");
+      setNovaPressao("");
+      setNovoStatusAtivo(true);
+      setNovaTravaAtiva(false);
+
+      await pegaDados();
+      alert("Sensor adicionado com sucesso!");
+    } catch (error) {
+      console.error("Falha ao adicionar sensor:", error);
+      alert("Não foi possível adicionar o sensor. Verifique o backend.");
+    }
+  };
+
   useEffect(() => {
     pegaDados();
     const interval = setInterval(pegaDados, 5000);
@@ -66,10 +111,6 @@ export default function Home() {
             <h1 className="mt-3 text-4xl font-black text-white">
               Painel de Sensores IoT
             </h1>
-            <p className="mt-2 max-w-2xl text-slate-400">
-              Os dados do Node-RED chegam ao backend e são exibidos no frontend
-              a cada 5 segundos.
-            </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -79,6 +120,90 @@ export default function Home() {
               nome="Atualizar Agora"
             />
             <Botao estilo="deletar" onClick={deletaTudo} nome="Limpar Dados" />
+          </div>
+        </div>
+
+        <div className="grid gap-4 rounded-3xl border border-slate-700 bg-slate-950/80 p-5 text-slate-300 shadow-inner shadow-slate-950/10">
+          <div className="grid gap-4 justify-items-center">
+            <div className="w-full max-w-3xl space-y-3 rounded-3xl border border-slate-700 bg-slate-950/80 p-5">
+              <p className="text-sm uppercase tracking-[0.32em] text-cyan-300/80">
+                Novo Sensor
+              </p>
+              <div className="grid gap-3">
+                <label className="text-sm text-slate-300">Nome do sensor</label>
+                <input
+                  value={novoSensor}
+                  onChange={(event) => setNovoSensor(event.target.value)}
+                  placeholder="Ex: Sensor de Temperatura"
+                  className="rounded-2xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                />
+                <label className="text-sm text-slate-300">Código</label>
+                <input
+                  value={novoCodigo}
+                  onChange={(event) => setNovoCodigo(event.target.value)}
+                  placeholder="Ex: T-001"
+                  className="rounded-2xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                />
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div>
+                    <label className="text-sm text-slate-300">Temp (°C)</label>
+                    <input
+                      value={novaTemp}
+                      onChange={(event) => setNovaTemp(event.target.value)}
+                      placeholder="25"
+                      className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-300">Umid (%)</label>
+                    <input
+                      value={novaUmid}
+                      onChange={(event) => setNovaUmid(event.target.value)}
+                      placeholder="60"
+                      className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-300">Pressão</label>
+                    <input
+                      value={novaPressao}
+                      onChange={(event) => setNovaPressao(event.target.value)}
+                      placeholder="1013"
+                      className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="flex items-center gap-2 text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={novoStatusAtivo}
+                      onChange={(event) =>
+                        setNovoStatusAtivo(event.target.checked)
+                      }
+                      className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-cyan-400"
+                    />
+                    Ativo
+                  </label>
+                  <label className="flex items-center gap-2 text-slate-300">
+                    <input
+                      type="checkbox"
+                      checked={novaTravaAtiva}
+                      onChange={(event) =>
+                        setNovaTravaAtiva(event.target.checked)
+                      }
+                      className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-amber-400"
+                    />
+                    Trava ativa
+                  </label>
+                </div>
+                <Botao
+                  estilo="confirmar"
+                  onClick={adicionarSensor}
+                  nome="Adicionar Sensor"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
